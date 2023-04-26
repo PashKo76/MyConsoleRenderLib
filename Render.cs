@@ -1,10 +1,10 @@
 ﻿namespace ConsoleRender
 {
-    public sealed class Render
+    delegate void Walker(int X, int Y);
+    public class ProtoRender
     {
-        static long t0;
-        static long t1;
-        static public Render CurrentRender { get; set; }
+        private protected static long t0;
+        private protected static long t1;
         static public int width { get; private set; }
         static public int height { get; private set; }
         static public float DeltaTime { get; private set; }
@@ -32,17 +32,30 @@
             DeltaTime /= 1000f;
             t1 = t0;
         }
-        char[,] currentScene = new char[width, height];
-        char[,] pastScene = new char[width, height];
+        static public bool ValidCord(int X, int Y)
+        {
+            if (X < 0 || X >= width || Y < 0 || Y >= height) return false;
+            return true;
+        }
+        private protected void Walk(Walker walker)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    walker.Invoke(x, y);
+                }
+            }
+        }
+    }
+    public class Render : ProtoRender, IRender
+    {
+        private protected char[,] currentScene = new char[width, height];
+        private protected char[,] pastScene = new char[width, height];
         public bool SetSymbol(int X, int Y, char Symbol)
         {
             if (!ValidCord(X, Y)) return false;
             currentScene[X, Y] = Symbol;
-            return true;
-        }
-        bool ValidCord(int X, int Y)
-        {
-            if (X < 0 || X >= width || Y < 0 || Y >= height) return false;
             return true;
         }
         public void DumbRender()
@@ -66,16 +79,50 @@
                 currentScene[X, Y] = ' ';
             });
         }
-        delegate void Walker(int X, int Y);
-        void Walk(Walker walker)
+    }
+    public class ColorRender : ProtoRender, IRender
+    {
+        private protected char[,] currentScene = new char[width, height];
+        private protected char[,] pastScene = new char[width, height];
+        private protected ConsoleColor[,] currentSceneC = new ConsoleColor[width, height];
+        private protected ConsoleColor[,] pastSceneC = new ConsoleColor[width, height];
+        public bool SetSymbol(int X, int Y, char Symbol)
         {
-            for(int x = 0; x < width; x++)
-            {
-                for (int y = 0; y < height; y++)
-                {
-                    walker.Invoke(x, y);
-                }
-            }
+            if (!ValidCord(X, Y)) return false;
+            currentScene[X, Y] = Symbol;
+            return true;
         }
+        public void DumbRender()
+        {
+            Walk((X, Y) =>
+            {
+                Console.SetCursorPosition(X, Y);
+                Console.ForegroundColor = currentSceneC[X, Y];
+                Console.Write(currentScene[X, Y]);
+            });
+        }
+        public void SmartRender()
+        {
+            Walk((X, Y) =>
+            {
+                if (currentScene[X, Y] != pastScene[X, Y] || currentSceneC[X, Y] != pastSceneC[X, Y])
+                {
+                    Console.SetCursorPosition(X, Y);
+                    Console.ForegroundColor = currentSceneC[X, Y];
+                    Console.Write(currentScene[X, Y]);
+                }
+                pastScene[X, Y] = currentScene[X, Y];
+                pastSceneC[X, Y] = currentSceneC[X, Y];
+                currentScene[X, Y] = ' ';
+                currentSceneC[X, Y] = ConsoleColor.Gray;
+            });
+        }
+    }
+    interface IRender
+    {
+        static public IRender? CurrentRender { get; set; }
+        public void DumbRender();
+        public void SmartRender();
+        public bool SetSymbol(int X, int Y, char Symbol);
     }
 }
