@@ -4,6 +4,7 @@
     {
         static long t0;
         static long t1;
+        static public Render CurrentRender { get; set; }
         static public int width { get; private set; }
         static public int height { get; private set; }
         static public float DeltaTime { get; private set; }
