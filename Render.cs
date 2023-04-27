@@ -1,5 +1,26 @@
 ﻿namespace ConsoleRender
 {
+    public struct Pixel
+    {
+        public char CharKey { get; set; }
+        public ConsoleColor ColorKey { get; set; }
+        public Pixel()
+        {
+            CharKey = ' ';
+            ColorKey = ConsoleColor.Gray;
+        }
+        public Pixel(char CharKey)
+        {
+            this.CharKey = CharKey;
+            ColorKey = ConsoleColor.Gray;
+        }
+        public Pixel(char CharKey, ConsoleColor ColorKey)
+        {
+            this.CharKey = CharKey;
+            this.ColorKey = ColorKey;
+        }
+
+    }
     public sealed class Render
     {
         static long t0;
@@ -46,6 +67,13 @@
             if (!ValidCord(X, Y)) return false;
             currentCharScene[X, Y] = Symbol;
             currentColorScene[X, Y] = Color;
+            return true;
+        }
+        public bool SetPixel(int X, int Y, Pixel pixel)
+        {
+            if (!ValidCord(X, Y)) return false;
+            currentCharScene[X, Y] = pixel.CharKey;
+            currentColorScene[X, Y] = pixel.ColorKey;
             return true;
         }
         bool ValidCord(int X, int Y)
