@@ -31,12 +31,21 @@
             DeltaTime /= 1000f;
             t1 = t0;
         }
-        char[,] currentScene = new char[width, height];
-        char[,] pastScene = new char[width, height];
+        char[,] currentCharScene = new char[width, height];
+        char[,] pastCharScene = new char[width, height];
+        ConsoleColor[,] currentColorScene = new ConsoleColor[width, height];
+        ConsoleColor[,] pastColorScene = new ConsoleColor[width, height];
         public bool SetSymbol(int X, int Y, char Symbol)
         {
             if (!ValidCord(X, Y)) return false;
-            currentScene[X, Y] = Symbol;
+            currentCharScene[X, Y] = Symbol;
+            return true;
+        }
+        public bool SetColorSymbol(int X, int Y, char Symbol, ConsoleColor Color)
+        {
+            if (!ValidCord(X, Y)) return false;
+            currentCharScene[X, Y] = Symbol;
+            currentColorScene[X, Y] = Color;
             return true;
         }
         bool ValidCord(int X, int Y)
@@ -49,20 +58,48 @@
             Walk((X, Y) =>
             {
                 Console.SetCursorPosition(X, Y);
-                Console.Write(currentScene[X, Y]);
+                Console.Write(currentCharScene[X, Y]);
+                currentCharScene[X, Y] = ' ';
+            });
+        }
+        public void DumbColorRender()
+        {
+            Walk((X, Y) =>
+            {
+                Console.SetCursorPosition(X, Y);
+                Console.ForegroundColor = currentColorScene[X, Y];
+                Console.Write(currentCharScene[X, Y]);
+                currentCharScene[X, Y] = ' ';
+                currentColorScene[X, Y] = ConsoleColor.Gray;
             });
         }
         public void SmartRender()
         {
             Walk((X, Y) =>
             {
-                if (currentScene[X, Y] != pastScene[X, Y])
+                if (currentCharScene[X, Y] != pastCharScene[X, Y])
                 {
                     Console.SetCursorPosition(X, Y);
-                    Console.Write(currentScene[X, Y]);
+                    Console.Write(currentCharScene[X, Y]);
                 }
-                pastScene[X, Y] = currentScene[X, Y];
-                currentScene[X, Y] = ' ';
+                pastCharScene[X, Y] = currentCharScene[X, Y];
+                currentCharScene[X, Y] = ' ';
+            });
+        }
+        public void SmartColorRender()
+        {
+            Walk((X, Y) =>
+            {
+                if (currentCharScene[X, Y] != pastCharScene[X, Y] || currentColorScene[X, Y] != pastColorScene[X, Y])
+                {
+                    Console.SetCursorPosition(X, Y);
+                    Console.ForegroundColor = currentColorScene[X, Y];
+                    Console.Write(currentCharScene[X, Y]);
+                }
+                pastCharScene[X, Y] = currentCharScene[X, Y];
+                pastColorScene[X, Y] = currentColorScene[X, Y];
+                currentCharScene[X, Y] = ' ';
+                currentColorScene[X, Y] = ConsoleColor.Gray;
             });
         }
         delegate void Walker(int X, int Y);
