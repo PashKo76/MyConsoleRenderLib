@@ -4,17 +4,7 @@
     {
         public char CharKey { get; set; }
         public ConsoleColor ColorKey { get; set; }
-        public Pixel()
-        {
-            CharKey = ' ';
-            ColorKey = ConsoleColor.Gray;
-        }
-        public Pixel(char CharKey)
-        {
-            this.CharKey = CharKey;
-            ColorKey = ConsoleColor.Gray;
-        }
-        public Pixel(char CharKey, ConsoleColor ColorKey)
+        public Pixel(char CharKey = ' ', ConsoleColor ColorKey = ConsoleColor.Gray)
         {
             this.CharKey = CharKey;
             this.ColorKey = ColorKey;
@@ -130,14 +120,13 @@
                 currentColorScene[X, Y] = ConsoleColor.Gray;
             });
         }
-        delegate void Walker(int X, int Y);
-        void Walk(Walker walker)
+        void Walk(Action<int, int> action)
         {
             for(int x = 0; x < width; x++)
             {
                 for (int y = 0; y < height; y++)
                 {
-                    walker.Invoke(x, y);
+                    action.Invoke(x, y);
                 }
             }
         }
