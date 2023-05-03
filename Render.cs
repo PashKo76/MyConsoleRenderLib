@@ -18,6 +18,7 @@
         static public int width { get; private set; }
         static public int height { get; private set; }
         static public float DeltaTime { get; private set; }
+        static Render? currentRender = null;
         static public void Initialize(int Width, int Height)
         {
             Console.SetWindowSize(Width, Height);
@@ -42,29 +43,42 @@
             DeltaTime /= 1000f;
             t1 = t0;
         }
-        char[,] currentCharScene = new char[width, height];
-        char[,] pastCharScene = new char[width, height];
-        ConsoleColor[,] currentColorScene = new ConsoleColor[width, height];
-        ConsoleColor[,] pastColorScene = new ConsoleColor[width, height];
-        public bool SetSymbol(int X, int Y, char Symbol)
+        static public Render CreateRender(int Width, int Height)
         {
-            if (!ValidCord(X, Y)) return false;
-            currentCharScene[X, Y] = Symbol;
-            return true;
+            if (currentRender == null)
+            {
+                Initialize(Width, Height);
+                currentRender = new Render();
+            }
+            return currentRender;
         }
-        public bool SetColorSymbol(int X, int Y, char Symbol, ConsoleColor Color)
+        static public Render GetRender()
         {
-            if (!ValidCord(X, Y)) return false;
+            if (currentRender == null) throw new Exception("Use CreateRender method to create it");
+            return currentRender;
+        }
+        private Render()
+        {
+            currentCharScene = new char[width, height];
+            pastCharScene = new char[width, height];
+            currentColorScene = new ConsoleColor[width, height];
+            pastColorScene = new ConsoleColor[width, height];
+        }
+        char[,] currentCharScene;
+        char[,] pastCharScene;
+        ConsoleColor[,] currentColorScene;
+        ConsoleColor[,] pastColorScene;
+        public void SetSymbol(int X, int Y, char Symbol, ConsoleColor Color = ConsoleColor.Gray)
+        {
+            if (!ValidCord(X, Y)) return;
             currentCharScene[X, Y] = Symbol;
             currentColorScene[X, Y] = Color;
-            return true;
         }
-        public bool SetPixel(int X, int Y, Pixel pixel)
+        public void SetSymbol(int X, int Y, Pixel pixel)
         {
-            if (!ValidCord(X, Y)) return false;
+            if (!ValidCord(X, Y)) return;
             currentCharScene[X, Y] = pixel.CharKey;
             currentColorScene[X, Y] = pixel.ColorKey;
-            return true;
         }
         bool ValidCord(int X, int Y)
         {
